@@ -42,6 +42,8 @@ input:focus { outline: none; border-color: #25D366; }
 <input type="text" id="company" placeholder="Your company">
 <label>City</label>
 <input type="text" id="city" placeholder="City / Country">
+<label>WhatsApp Number (with country code) <span class="req">*</span></label>
+<input type="tel" id="phone" placeholder="+91 98765 43210">
 <label>LinkedIn Profile</label>
 <input type="url" id="linkedin" placeholder="https://linkedin.com/in/yourprofile">
 <button class="btn" id="nextBtn" onclick="goStep2()">Next →</button>
@@ -63,6 +65,7 @@ function goStep2() {
   const company = document.getElementById('company').value.trim();
   if (!name || !company) { alert('Please enter your name and company'); return; }
   const city = document.getElementById('city').value.trim();
+  const phone = document.getElementById('phone').value.trim();
   const linkedin = document.getElementById('linkedin').value.trim();
   
   // Show loading state
@@ -85,6 +88,7 @@ function goStep2() {
       name: name,
       company: company,
       city: city,
+      phone: phone,
       linkedin: linkedin,
       source: 'web-form'
     })
