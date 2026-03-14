@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Event Signal Engine — Subscribe</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: -apple-system, sans-serif; max-width: 480px; margin: 40px auto; padding: 20px; text-align: center; background: #fafafa; }
+h1 { font-size: 22px; margin-bottom: 4px; }
+.sub { color: #666; font-size: 14px; margin-bottom: 24px; }
+.card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: left; margin-bottom: 16px; }
+.card h2 { font-size: 16px; margin: 0 0 16px 0; }
+label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; margin-top: 12px; }
+input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+input:focus { outline: none; border-color: #25D366; }
+.btn { display: block; width: 100%; background: #25D366; color: white; padding: 16px; border-radius: 8px; text-decoration: none; font-size: 17px; font-weight: bold; margin-top: 20px; border: none; cursor: pointer; text-align: center; box-sizing: border-box; }
+.btn:hover { background: #1da851; }
+.btn:disabled { background: #ccc; cursor: not-allowed; }
+.btn-secondary { background: #0077B5; margin-top: 12px; }
+.btn-secondary:hover { background: #005e93; }
+.step-num { display: inline-block; background: #25D366; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 13px; margin-right: 6px; }
+.note { color: #888; font-size: 12px; margin-top: 16px; }
+#step2 { display: none; }
+.req { color: #e53e3e; }
+.spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<h1>📡 Event Signal Engine</h1>
+<p class="sub">AI-powered event RFP & tender alerts — 200+ sources, 15+ countries</p>
+
+<div class="card" id="step1">
+<h2><span class="step-num">1</span> Tell us about you</h2>
+<label>Name <span class="req">*</span></label>
+<input type="text" id="name" placeholder="Your full name" required>
+<label>Company <span class="req">*</span></label>
+<input type="text" id="company" placeholder="Your company">
+<label>City</label>
+<input type="text" id="city" placeholder="City / Country">
+<label>LinkedIn Profile</label>
+<input type="url" id="linkedin" placeholder="https://linkedin.com/in/yourprofile">
+<button class="btn" id="nextBtn" onclick="goStep2()">Next →</button>
+</div>
+
+<div class="card" id="step2">
+<h2><span class="step-num">2</span> Save our number & subscribe</h2>
+<p style="font-size:14px; color:#555;">WhatsApp won't deliver alerts unless you've saved the number first.</p>
+<a class="btn" href="data:text/vcard;base64,QkVHSU46VkNBUkQKVkVSU0lPTjozLjAKRk46RXZlbnQgU2lnbmFsIEVuZ2luZQpURUw7VFlQRT1DRUxMOis5MTc4OTkwMjM5OTcKT1JHOlNhcmNvbgpOT1RFOkFJLXBvd2VyZWQgZXZlbnQgUkZQICYgdGVuZGVyIGFsZXJ0cwpFTkQ6VkNBUkQ=" download="Event-Signal-Engine.vcf">📥 Save Contact Number</a>
+<a class="btn btn-secondary" id="waBtn" href="#">💬 Subscribe on WhatsApp</a>
+<p class="note">Free early access — capped at 100 agencies.</p>
+</div>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycby6w-AAafkE2jfnFtLXyWKKRZ1xVCtk4ZgkLUL5114MjGxR7lJoVJirFlAOlTkK5Rp1/exec';
+
+function goStep2() {
+  const name = document.getElementById('name').value.trim();
+  const company = document.getElementById('company').value.trim();
+  if (!name || !company) { alert('Please enter your name and company'); return; }
+  const city = document.getElementById('city').value.trim();
+  const linkedin = document.getElementById('linkedin').value.trim();
+  
+  // Show loading state
+  const btn = document.getElementById('nextBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Loading...';
+  
+  // Build WhatsApp message
+  let msg = 'Hi Signal - ' + name + ', ' + company;
+  if (city) msg += ', ' + city;
+  if (linkedin) msg += ' | ' + linkedin;
+  document.getElementById('waBtn').href = 'https://wa.me/917899023997?text=' + encodeURIComponent(msg);
+  
+  // Save to Google Sheet (fire and forget — don't block the user)
+  fetch(SHEET_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: name,
+      company: company,
+      city: city,
+      linkedin: linkedin,
+      source: 'web-form'
+    })
+  }).finally(function() {
+    // Show step 2 regardless of whether sheet save succeeded
+    document.getElementById('step1').style.display = 'none';
+    document.getElementById('step2').style.display = 'block';
+  });
+  
+  // Fallback: if fetch takes too long, show step 2 after 2 seconds anyway
+  setTimeout(function() {
+    document.getElementById('step1').style.display = 'none';
+    document.getElementById('step2').style.display = 'block';
+  }, 2000);
+}
+</script>
+</body>
+</html>
